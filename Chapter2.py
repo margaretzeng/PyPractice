@@ -84,3 +84,70 @@ help()
 import datetime as dt
 import numpy as np
 import pandas as pd
+
+testing = np.arange(5)
+testing
+
+np.random.seed(0) # set a seed for reproducibility
+pd.Series(np.random.rand(5), name = 'random')
+
+np.random.seed(0)
+pd.DataFrame(
+    {
+     'random' : np.random.rand(5),
+     'text' : ['hot', 'warm', 'cool', 'cold', None],
+     'truth' : [np.random.choice([True, False])
+                                 for _ in range(5)]
+     },
+    index=pd.date_range(
+        end=dt.date(2019, 4, 21),
+        freq='1D', periods = 5, name ='date'
+        )
+    )
+
+pd.DataFrame([
+    {'mag' : 5.2, 'place' : 'California'},
+    {'mag' : 1.2, 'place' : 'Alaska'},
+    {'mag' : 0.2, 'place' : 'California'},
+    ])
+
+list_of_tuples = [(n, n**2, n**3) for n in range(5)]
+list_of_tuples
+
+pd.DataFrame(
+    list_of_tuples,
+    columns = ['n', 'n_squared', 'n_cubed'])
+
+#using pd.DataFrame() with Numpy arrays:
+pd.DataFrame(
+    np.array([
+        [0,0,0],
+        [1,1,1],
+        [2,4,8],
+        [3,9,27],
+        [4,16,64]
+        ]), columns = ['n', 'n_squared', 'n_cubed']
+    )
+
+!wc -l data/earthquakes.csv # not working here.
+
+df = pd.read_csv('./data/earthquakes.csv')
+
+df = pd.read_csv(
+    'https://github.com/stefmolin/Hands-On-Data-Analysis-with-Pandas/blob/master/ch_02/data/earthquakes.csv?raw=True')
+
+df
+
+import sqlite3
+
+with sqlite3.connect('data/quakes.db') as connection:
+    pd.read_csv('data/tsunamis.csv').to_sql(
+        'tsunamis', connection, index=False,
+        if_exists='replace'
+        )
+    
+with sqlite3.connect('data/quakes.db') as connection:
+    tsunamis = \
+        pd.read_sql('select * FROM tsunamis', connection)
+        
+tsunamis.head()
