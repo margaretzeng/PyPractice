@@ -151,3 +151,81 @@ with sqlite3.connect('data/quakes.db') as connection:
         pd.read_sql('select * FROM tsunamis', connection)
         
 tsunamis.head()
+
+----------------------------
+#Getting data based from an API
+
+import datetime as dt
+import pandas as pd
+import requests
+
+yesterday = dt.date.today() - dt.timedelta(days = 1)
+
+api = 'https://earthquake.usgs.gov/fdsnws/event/1/query'
+
+payload = {
+    'format' : 'geojson',
+    'starttime' : yesterday - dt.timedelta(days = 30),
+    'endtime' : yesterday
+    }
+
+response = requests.get(api, params = payload)
+
+#checking the request was successful, 200 means everything is ok.
+response.status_code
+
+earthquake_json = response.json()
+earthquake_json.keys()
+
+earthquake_json['metadata']
+
+type(earthquake_json['features'])
+
+earthquake_json['features']
+
+earthquake_json['features'][0]
+
+
+earthquake_properties_data = [
+    nothing['properties']
+    for nothing in earthquake_json['features']
+    ]
+
+earthquake_properties_data[0]
+
+df = pd.DataFrame(earthquake_properties_data)
+
+--------------------
+#Inspecing a DataFrame object
+
+df = pd.read_csv('data/earthquakes.csv')
+
+df.empty #check if the dataframe is empty
+
+df.shape #check the number of observations(rows) and variables(columns)
+
+df.columns # see the name of the columns
+
+df.head() #check the top rows, and you could put number in it.
+
+df.head(10)
+
+df.tail() #check the bottom rows of the dataset
+
+df.dtypes # check the data types of the columns
+
+df.info() # check the non-null entreis of each columns
+
+df.describe() # checking the statistical summary, also work for Series objects.
+
+df.describe(percentiles = [0.05, 0.95]) # if you want only the 5th and 95th percentiles
+
+df.describe(include=np.object) #pick those non-numeric data and get their occurance, # of unique, mode etc.
+
+df.columns
+
+df.alert.unique()
+
+df["alert"].unique()
+
+df.alert.value_counts()
