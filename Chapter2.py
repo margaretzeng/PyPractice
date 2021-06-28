@@ -198,6 +198,9 @@ df = pd.DataFrame(earthquake_properties_data)
 --------------------
 #Inspecing a DataFrame object
 
+import pandas as pd
+import numpy as np
+
 df = pd.read_csv('data/earthquakes.csv')
 
 df.empty #check if the dataframe is empty
@@ -229,3 +232,33 @@ df.alert.unique()
 df["alert"].unique()
 
 df.alert.value_counts()
+
+df[
+   ['title', 'time']
+   + [col for col in df.columns if col.startswith('mag')]
+   ]
+
+#use a list comprehension to go through each of the columns in the df and only keep those starated with mag:
+
+[col for col in df.columns if col.startswith('mag')]
+
+col for col in df.columns if col.startswith('mag') # need to put this in a bracket as a list, otherwise won't work.
+
+df[['title', 'time']][100:103]
+
+
+df.loc[110:112, 'title'] = \
+    df.loc[110:112, 'title'].str.lower()
+
+
+df.loc[:, 'title']
+
+#loc[] is inclusive, iloc[] is not inclusive.
+# when using loc[], the end index is inclusive. but when iloc[], the end index is exclusive.
+df.iloc[10:15, [19,8]]
+df.loc[10:15, ['title' , 'mag']]
+
+# looking up for scalar values, use at[], or iat[]
+df.at[10, 'mag']
+
+
