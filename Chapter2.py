@@ -261,4 +261,124 @@ df.loc[10:15, ['title' , 'mag']]
 # looking up for scalar values, use at[], or iat[]
 df.at[10, 'mag']
 
+# Filtering
 
+df.mag > 2
+
+df[df.mag >2]
+
+df.loc[
+       df.mag >= 7.0,
+       ['alert', 'mag', 'magType', 'title']]
+
+# loc[] can handle Boolean masks as well:
+df.loc[
+       df.mag >= 7.0,
+       ['alert', 'mag',]]
+
+
+df.columns
+
+df.loc[
+       (df.place.str.contains('Alaska'))
+       & (df.alert.notnull()),
+       ['alert','mag']]
+
+df.loc[
+       (df.place.str.contains('Alas')) # it's contians, so not nessessary gonna be equal.
+       & (df.alert.notnull()), # here's a notnull() method to get rows where alert columns was not null.
+       ['alert','mag']]
+
+df.loc[
+       (df.place.str.contains('CA$' | 'California') # I got this wrong. the correct one is below.
+        & df.mag >= 3.8)]
+
+df.loc[
+       (df.place.str.contains(r'CA$|California$')) # wrong again
+       & df.mag >= 3.8]
+
+df.loc[
+       (df.place.str.contains( r'CA|California$')) & (df.mag >= 3.8)]  #why Iｇｅｔ　ａｎ　ｅｍｐｔｙ　ｄａｔａｆｒａｍｅ　ｈｅｒｅ？　ｗｈａｔ＇ｓ　ｔｈｅ　ｄｉｆｆ　ｗｈｅｎ　ｈａｖｉｎｇ　＄　ｗｉｔｈ　ｔｈｅ　２　ｓｔｒｉｎｇ　ｂｅｔｗｅｎ　｜？？
+
+
+df.loc[
+    (df.place.str.contains(r'CA|California$')) & (df.mag > 3.8),
+    ['alert', 'mag', 'magType', 'title', 'tsunami', 'type']
+]
+
+df.loc[
+       (df.mag.between(6.5, 7.5))]
+
+df.loc[
+       df.magType.isin(['mw', 'mwb'])]
+
+# getting the index of the rows where max mag and min mag are
+[df.mag.idxmin(), df.mag.idxmax()]
+# and use these to get the rows
+import pandas as pd
+
+df.loc[
+       [df.mag.idxmin(), df.mag.idxmax()],
+       ['alert', 'mag', 'magType', 'title', 'tsunami', 'type']]
+
+-----------Adding ad removing data
+
+df = pd.read_csv(
+    'data/earthquakes.csv',
+    usecols = [
+        'time', 'title', 'place', 'magType',
+        'mag', 'alert', 'tsunami'])
+
+df['source'] = 'USGS API'
+df.head()
+
+df['mag_negative'] = df.mag <0
+df.head()
+
+df.place.str.extract(r', (.*$)') [0].sort_values().unique()
+
+df.columns
+
+df['parsed_place'] = df.place.str.replace(
+    r'.* of ','', regex = True
+    ).str.replace(
+        'the ', ''
+    ).str.replace(
+        r'CA$', 'California', regex = True
+    ).str.replace(
+        r'NV$', 'Nevada', regex = True
+    ).str.replace(
+        r'MX$', 'Mexico', regex = True
+    ).str.replace(
+        r' region$', '', regex = True
+    ).str.replace(
+        'northern ', ''
+    ).str.replace(
+        'Fiji Islands', 'Fiji'
+    ).str.replace(
+        r'^.*, ','', regex =True # remove anything else extraneous from start
+    ).str.strip() #remove any extra spaces
+        
+df.parsed_place.sort_values().unique()
+
+df.assign(
+    in_ca = df.parsed_place.str.endswith('California'),
+    in_alaska = df.parsed_place.str.endswith('Alaska')
+    ).sample(5, random_state = 0)
+
+df.assign(
+    in_ca = df.parsed_place.str.endswith('California'),
+    in_alaska = df.parsed_place.str.endswith('Alaska'),
+    neither = lambda x: ~x.in_ca & ~x.in_alaska
+    ).sample(5, random_state = 0)
+
+# adding new row
+tsunami = df[df.tsunami ==1]
+no_tsunami = df[df.tsunami != 1]
+tsunami.shape
+no_tsunami.shape
+
+additional_columns = pd.read_csv(
+    'data/earthquakes.csv', usecols = ['tz', 'felt', 'ids'])
+
+pd.concat([df.head(2), additional_columns.head(2)], axis = 1)
