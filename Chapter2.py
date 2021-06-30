@@ -382,3 +382,72 @@ additional_columns = pd.read_csv(
     'data/earthquakes.csv', usecols = ['tz', 'felt', 'ids'])
 
 pd.concat([df.head(2), additional_columns.head(2)], axis = 1)
+
+pd.concat(
+    [
+     tsunami.head(2),
+     no_tsunami.head(2).assign(type = 'earthquake')
+     ],
+    join='inner')
+
+df.columns
+
+mag_negative = df.pop('mag_negative')
+
+df.columns
+
+df[mag_negative]
+
+cols_to_drop = [
+    col for col in df.columns
+    if col not in [
+            'alert', 'mag', 'title', 'time', 'tsunami']]
+
+df.drop(columns = cols_to_drop)
+
+-----Excercises part-----------
+
+df = pd.read_csv('./parsed.csv')
+
+# 1. find the 95th percentile of earthquake magnitude in Japan using the mb magnitude type.
+
+df.columns
+df.empty
+df.info
+df.describe
+
+df['magType']
+df['sources']
+
+places = pd.DataFrame(df.place.unique())
+
+places.columns.sort()
+
+places = df.place.sort_values().unique()
+
+places_end = df.place.str.extract(r', (.*$)') [0].sort_values().unique()
+
+df.columns
+df.type.unique()
+
+df.loc[
+    (df.place.str.endswith('Japan'))
+    & (df.magType == 'mb')
+    & (df.type == 'earthquake'), :]
+
+df[
+   (df.place.str.endswith('Japan'))
+   & (df.magType == 'mb')].mag.quantile(0.95)
+
+# 2. Indonisia ---直接看的答案，会选条件但是不会计算。
+
+df[(df.place.str.endswith('Indonesia'))].tsunami.value_counts(normalize = True)
+
+df[(df.place.str.endswith('Indonesia'))].tsunami.value_counts(normalize = True).loc[1,]
+
+# 3. Nevada
+
+df[df.place.str.endswith('Nevada')].describe()
+
+df.assign(
+   is_fire_ring = df.place.str.endswith(['Alaska', 'Antarctic', 'Bolivia', 'California', 'Canada', 'Chile', 'Costa Rica', 'Ecuador', 'Fiji', 'Mexico']))
