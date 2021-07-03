@@ -2,6 +2,10 @@
 """
 Created on Wed Jun 30 22:33:27 2021
 
+# the last part in the script is not working, error: 'metadata'
+# just skip this for now.
+
+
 @author: margaret
 """
 
@@ -68,4 +72,108 @@ response.ok
 payload = response.json()
 payload.keys()
 
-payload['metadata']
+payload['metadata']['resultset']['count']
+
+payload['results'][0].keys()
+
+payload['results'][0]
+
+[(data['id'], data['name'])for data in payload['results']] 
+
+response = make_request(
+    'locationcategories', payload = {'datasetid' : 'GHCND'})
+
+response.status_code
+
+response.json()['results']
+
+import pprint
+
+pprint.pprint(response.json())
+
+def get_item(name, what, endpoint, start = 1, end = None):
+    """
+    Grab the JSON payload using binary search
+    """
+    
+    # find the midpoint to cut the data in half each time
+    mid = (start + (end or 1)) // 2
+    
+    # lowercase the name so this not ae-sentitive
+    name = name.lower()
+    
+    # define the payload we will send with each request
+    payload = {
+        'datasetid' : 'GHCND', 'sortfield' : 'name',
+        'offset' : mid, # we'll change the offset each time
+        'limit' : 1 # we only want one value back
+        }
+    # make request adding addtional filters from 'what'
+    response = make_request(endpoint, {**payload, **what})
+    
+    if response.ok:
+        payload = response.json()
+        
+        # if ok, grab the ind index from the response
+        # metadata the first time through
+        end = end if end else payload['metadata']['resultset']['count']
+            
+        #grab the lowcase version ofo the current name
+        current_name = \
+            payload['results'][0]['name'].lower()
+        
+        # if what we are searching for is in the current name, we have found out item
+        if name in current_name:
+            #return the found item
+            return payload['results'][0]
+        else:
+            if start >= end:
+                # if start index is greater than or equal to end index, we couldnt find it
+                return {}
+            elif name < current_name:
+                # name comes before the current name in the alphabet > search further to the left
+                return get_item(name, what, endpoint, start, mid -1)
+            
+            elif name > current_name:
+            # name comes after the current name in the alphabet > search further to the right
+                return get_item(name, what, endpoint, mid +1, end)
+        
+    else:
+        # response wasnt ok, use code to determine why
+        print('Response not OK, '
+              f'status:{response.status_code}')
+        
+    """
+    Parameters
+    ----------
+    name : TYPE
+        DESCRIPTION.
+    what : TYPE
+        DESCRIPTION.
+    endpoint : TYPE
+        DESCRIPTION.
+    start : TYPE, optional
+        DESCRIPTION. The default is 1.
+    end : TYPE, optional
+        DESCRIPTION. The default is None.
+
+    Returns
+    -------
+    None.
+
+    """
+
+
+nyc = get_item('New York', {'locationcategoryid' : 'CITY'}, 'locations')
+
+nyc
+
+central_park = get_item(
+    'NY City Central Park',
+    {'locationid' : nyc['id']}, 'stations') # somehow it's not working!!!!
+
+central_park1 = get_item('NY City Central Park', {'locationid' : nyc['id']}, 'stations')
+
+response = make_request('data',
+                        {'datasetid' : 'GHCND',
+                         'stationid' : 'c'})
