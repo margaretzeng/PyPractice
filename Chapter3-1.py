@@ -48,3 +48,24 @@ g = sns.FacetGrid(long_df, col='datatype', height=10)
 g = g.map(plt.plot, 'date', 'value')
 g.set_titles(size=25)
 g.set_xticklabels(rotation=45)
+
+import requests
+
+def make_request(endpoint, payload=None):
+    return requests.get(
+        'http://www.ncdc.noaa.gov/cdo-web/'
+        f'api/v2/{endpoint}',
+        headers = {'token' : 'zBdVrWZCCyBkAknisQxCVbvWBrrLBXEb'},
+        params=payload)
+
+response = \
+    make_request('datasets', {'startdate' : '2018-10-01'})
+    
+response.status_code
+
+response.ok
+
+payload = response.json()
+payload.keys()
+
+payload['metadata']
