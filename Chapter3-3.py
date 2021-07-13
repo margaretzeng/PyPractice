@@ -127,3 +127,55 @@ for spine in ['top', 'right']:
     ax.spines[spine].set_visible(False)
     
 plt.show()
+
+
+sp.reindex(bitcoin.index, method = 'ffill').head(10)\
+    .assign(day_of_week = lambda x:x.index.day_name())
+
+np.where(boolean condition, value if True, value if False)
+
+import numpy as np
+
+sp_reindexed = sp.reindex(bitcoin.index).assign(
+    # volume is 0 when the market is closed
+    volume = lambda x:x.volume.fillna(0),
+    
+    close = lambda x:x.close.fillna(method = 'ffill'),
+    open = lambda x:\
+        np.where(x.open.isnull(), x.close, x.open),
+    high = lambda x:\
+        np.where(x.high.isnull(), x.close, x.high),
+    low = lambda x:\
+        np.where(x.low.isnull(), x.close, x.low))
+    
+sp_reindexed.head(10).assign(
+    day_of_week = lambda x:x.index.day_name())
+
+squares = []
+for i in range(1, 101):
+    squares.append(i**2)
+
+print(squares)
+
+squares2 = [i**2 for i in range(1,101)]
+squares2
+
+# gmovies = [title for title in movies if title.startswith("G")]
+
+moviesbefore2000 = [title for title in movies[0] if movies[1] < 2000]
+moviesbefore2000 = [title for (title, year) in movies if year < 2000]
+
+# scalar multiplication
+v = [2, -3, 1]
+4*v # 4 * v = v+v+v+
+
+fixed_portfolio = sp_reindexed + bitcoin
+
+ax = fixed_portfolio['2017-Q4' : '2018-Q2'].plot(
+    y = 'close', figsize = (15,5), linewidth = 2,
+    label = 'reindexed portfolio of SP 500 + bitcoin',
+    title = 'reindexed portfolio vs.')
+
+portfolio['2017-Q4' : '2018-Q2'].plot(
+    y = 'close', ax = ax, linestyle = 'dashed',
+    label = 'portolio of SP 500')
