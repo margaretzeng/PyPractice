@@ -1,0 +1,129 @@
+import pandas as pd
+
+df = pd.read_csv('data/dirty_data.csv')
+
+#checking the first glance.
+
+df.head()
+
+df.describe()
+
+print(df.describe().to_string()) # using print() and tu_string() could see the whole columns
+
+df.info() # check if any missing value and check that our columns have the expected data type.
+
+contain_nulls = df[
+    df.SNOW.isna() | df.SNWD.isna() | df.TOBS.isna()
+    | df.WESF.isna() | df.inclement_weather.isna()
+]
+
+# see how many rows is having na.
+contain_nulls.shape[0]
+
+print(contain_nulls.head(10).to_string())
+
+import numpy as np
+
+#see how many NAN in the weather columns
+df[df.inclement_weather.isna()].shape[0]
+
+# inf and -inf are actually np.inf and -np.inf. you can find the number of rows with inf or -inf values by this:
+df[df.SNWD.isin([-np.inf, np.inf])].shape[0]
+
+def get_inf_count(df):
+    """Find the number of inf/-inf values per columns"""
+
+    return{
+        col:df[
+            df[col].isin([np.inf, -np.inf])
+            ].shape[0] for col in df.columns
+    }
+
+get_inf_count(df)
+
+pd.DataFrame({
+    'np.inf Snow Depth':
+        df[df.SNWD == np.inf].SNOW.describe(),
+    '-np.inf Snow Depth':
+        df[df.SNWD == -np.inf].SNOW.describe()
+}).T
+
+df.describe(include = 'object')
+
+df[df.duplicated()].shape[0]
+
+df[df.duplicated(['date', 'station'])].shape[0]
+
+df[df.duplicated()].head()
+
+df[df.WESF.notna()].station.unique()
+
+df.date = pd.to_datetime(df.date)
+
+station_qm_wesf = df[df.station =='?']\
+    .drop_duplicates('date').set_index('date').WESF
+
+station_qm_wesf
+
+df[df.WESF.notna()].station.unique() # here's picking up the station when the WESF is not null.
+
+df.sort_values(
+    'station', ascending=False, inplace=True
+)
+
+df_deduped = df.drop_duplicates('date')
+
+df_deduped = df_deduped.drop(columns='station')\
+    .set_index('date').sort_index()
+
+df_deduped = df_deduped.assign(WESF =
+                               lambda x:x.WESF.combine_first(station_qm_wesf))
+
+df_deduped.shape
+
+df_deduped = df_deduped.assign(
+    TMAX = lambda x:x.TMAX.replace(5505, np.nan),
+    TMIN = lambda x:x.TMIN.replace(-40, np.nan)
+)
+
+df_deduped.assign(
+    TMAX = lambda x:x.TMAX.fillna(method = 'ffill'),
+    TMIN = lambda x:x.TMIN.fillna(method = 'ffill')
+).head()
+
+df_deduped.reindex(
+    pd.date_range('2018-01-01', '2018-12-31', freq='D')).apply(lambda x:x.interpolate()).head(10)
+
+aapl = pd.read_csv('data/apple.csv')
+amazn = pd.read_csv('data/amazon.csv')
+goog = pd.read_csv('data/google.csv')
+nflx = pd.read_csv('data/netflix.csv')
+fb = pd.read_csv('data/facebook.csv')
+
+aapl['ticker'] = 'AAPL'
+amazn['ticker'] = 'amazn'
+goog['ticker'] = 'goog'
+nflx['ticker'] = 'nflx'
+fb['ticker'] = 'fb'
+
+faang = aapl.append([amazn, goog, nflx, fb])
+
+faang.to_csv('data/faang.csv')
+
+faang.columns
+
+faang.info()
+
+import datetime as dt
+faang['date'] = pd.to_datetime(faang['date'])
+
+faang['volume'] = pd.to_numeric(faang['volume'])
+
+faang.info()
+
+faang = faang.sort_values(['date', 'ticker'])
+
+faang['volume'].min(7) # not wokring this one, how to find the lowest 7?
+
+test = faang.melt(id_vars=['date', 'ticker'], value_vars= ['open', 'high', 'low', 'close', 'volume'])
+
