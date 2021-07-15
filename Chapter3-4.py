@@ -44,3 +44,28 @@ multi_index_df.head()
 unstacked_df = multi_index_df.unstack()
 
 unstacked_df.head()
+
+wide_df = pd.read_csv('data/wide_data.csv')
+
+wide_df.head()
+
+melted_df = wide_df.melt(
+    id_vars = 'date', value_vars=['TMAX', 'TMIN', 'TOBS'],
+    value_name = 'temp_C', var_name = 'measurement'
+)
+
+melted_df.head()
+
+wide_df.set_index('date', inplace = True)
+stacked_series = wide_df.stack()
+
+stacked_series.head()
+
+stacked_df = stacked_series.to_frame('values')
+
+stacked_df
+
+stacked_df.head().index
+stacked_df.head().index.set_names(['date', 'datatype'], inplace=True)
+
+stacked_df.index.names
