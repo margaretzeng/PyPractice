@@ -27,3 +27,36 @@ inner_join = weather.merge(
     station_info, left_on = 'station', right_on='id'
 )
 
+
+# Sunday July 18, 2021
+
+dirty_data = pd.read_csv(
+    'data/dirty_data.csv', index_col= 'date'
+).drop_duplicates().drop(columns='SNWD')
+
+dirty_data.head()
+
+valid_station = dirty_data.query('station != "?"')\
+    .drop(columns = ['WESF', 'station'])
+
+station_with_wesf = dirty_data.query('station == "?"')\
+    .drop(columns = ['station', 'TOBS', 'TMIN', 'TMAX'])
+
+valid_station.merge(
+    station_with_wesf, how = 'left',
+    left_index = True, right_index = True
+).query('WESF > 0' ).head()
+
+
+valid_station.merge(
+    station_with_wesf, how = 'left',
+    left_index = True, right_index = True,
+    suffixes = ('', '_?')
+).query('WESF > 0' ).head()
+
+weather.set_index('station', inplace= True)
+station_info.set_index('id', inplace=True)
+
+weather.index.intersection(station_info.index)
+
+station_info.index.difference(weather.index)
