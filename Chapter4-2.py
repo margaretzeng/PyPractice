@@ -21,3 +21,33 @@ fb['2018-01-11':'2018-01-12']
 (fb>215)
 
 (fb>215).any()
+
+volume_binded = pd.cut(
+    fb.volume, bins = 3, labels = ['low', 'med', 'high']
+)
+
+volume_binded.value_counts()
+
+fb[volume_binded=='high'].sort_values('volume', ascending = False)
+
+fb['2018-07-25':'2018-07-26']
+
+central_park_weather = weather.query(
+    'station == "GHCND:USW00094728"'
+).pivot(index = 'date', columns = 'datatype', values = 'value')
+
+oct_weather_z_scroes = central_park_weather\
+    .loc['2018-10', ['TMIN','TMAX','PRCP']]\
+    .apply(lambda x:x.sub(x.mean()).div(x.std()))
+
+oct_weather_z_scroes.describe()
+
+oct_weather_z_scroes.query('PRCP>3').PRCP
+oct_weather_z_scroes.query('PRCP>3')
+
+central_park_weather.loc['2018-10', 'PRCP'].describe()
+
+central_park_weather.loc['2018-10'].assign(
+    rolling_PRCP=lambda x:x.PRCP.rolling('3D').sum()
+)[['PRCP','rolling_PRCP']].head(7).T
+
