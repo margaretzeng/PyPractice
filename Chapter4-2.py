@@ -51,3 +51,18 @@ central_park_weather.loc['2018-10'].assign(
     rolling_PRCP=lambda x:x.PRCP.rolling('3D').sum()
 )[['PRCP','rolling_PRCP']].head(7).T
 
+central_park_weather.assign(
+    AVG = lambda x:x.TMAX.rolling('30D').mean(),
+    EWMA = lambda x:x.TMAX.ewm(span=30).mean()
+).loc['2018-09-29':'2018-10-08',['TMAX','EWMA','AVG']]
+
+
+from window_calc import window_calc
+
+window_calc(
+    central_park_weather.loc['2018-10'],
+    pd.DataFrame.rolling,
+    {'TMAX':'max', 'TMIN':'min',
+     'AWND':'mean','PRCP':'sum'},
+    '3D'
+).head() # the window_calc is from the book, not a built-in package.....
